@@ -3,6 +3,12 @@ from psycopg2 import sql
 from app.services.config import configs
 
 
+def close_connection(conn, cur):
+    conn.commit()
+    cur.close()
+    conn.close()
+
+
 def create_table():
 
     conn = psycopg2.connect(**configs)
@@ -19,11 +25,14 @@ def create_table():
         """
     )
     cur.execute(query)
-
-    conn.commit()
-    cur.close()
-    conn.close()
+    close_connection(conn, cur)
 
 
 class Animes():
-    ...
+    def __init__(self, anime: str, released_date, seasons: int) -> None:
+        self.anime = anime.title()
+        self.released_date = released_date
+        self.seasons = seasons
+
+    def save(self):
+        ...
