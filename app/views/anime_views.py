@@ -1,11 +1,14 @@
 from flask import Blueprint
+from app.services.anime_services import Animes
 
-bp_animes = Blueprint("anime_bp", __name__, url_prefix="/anime")
+bp_animes = Blueprint("anime_bp", __name__, url_prefix="/animes")
 
 
-@bp_animes.route(" ", methods=("GET", "POST"))
+@bp_animes.route("", methods=("GET", "POST"))
 def get_create():
-    ...
+    anime = Animes()
+
+    return {"msg": "ok"}
 
 
 @bp_animes.get("/<int:anime_id>")
