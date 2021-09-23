@@ -122,6 +122,9 @@ class Animes():
 
     @staticmethod
     def anime_update(anime_id: int, data: dict):
+        if data.get("anime"):
+            data["anime"] = data["anime"].title()
+
         keys = ["id", "anime", "released_date", "seasons"]
         columns = [sql.Identifier(key) for key in data.keys()]
         values = [sql.Literal(value) for value in data.values()]
