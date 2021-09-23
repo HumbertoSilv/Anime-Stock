@@ -1,6 +1,7 @@
 from flask import Blueprint, request
 from app.services.anime_services import Animes
-# from app.exc.exc import InvalidKeys
+from psycopg2.errors import UniqueViolation
+
 
 bp_animes = Blueprint("anime_bp", __name__, url_prefix="/animes")
 
@@ -11,11 +12,15 @@ def get_create():
         try:
             data = request.json
             anime = Animes(**data)
-            return {"msg": anime.__dict__}
+            saved = anime.save()
+            return saved, 201
 
         except TypeError as e:
             return {"available_key": ["anime", "released_date", "seasons"],
-                    "wrong_keys_sended": [str(e).split("'")[1]]}
+                    "wrong_keys_sended": [str(e).split("'")[1]]}, 422
+
+        except UniqueViolation:
+            return {"error": "anime already exists."}, 409
 
 
 @bp_animes.get("/<int:anime_id>")

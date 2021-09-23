@@ -1,6 +1,6 @@
 import psycopg2
-from psycopg2 import sql
 from app.services.config import configs
+from psycopg2 import sql
 
 
 def close_connection(conn, cur):
@@ -35,4 +35,34 @@ class Animes():
         self.seasons = seasons
 
     def save(self):
-        ...
+        create_table()
+
+        conn = psycopg2.connect(**configs)
+        cur = conn.cursor()
+
+        keys = ["id", "anime", "released_date", "seasons"]
+        columns = [sql.Identifier(key) for key in self.__dict__.keys()]
+        values = [sql.Literal(value) for value in self.__dict__.values()]
+
+        query = sql.SQL(
+            """
+                INSERT INTO
+                    animes (id, {columns})
+                VALUES
+                    (DEFAULT, {values})
+                RETURNING *;
+            """
+        ).format(
+            columns=sql.SQL(',').join(columns),
+            values=sql.SQL(',').join(values)
+        )
+
+        cur.execute(query)
+
+        fetch_result = cur.fetchone()
+
+        close_connection(conn, cur)
+
+        for_dict = dict(zip(keys, fetch_result))
+
+        return for_dict
