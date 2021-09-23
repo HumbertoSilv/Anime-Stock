@@ -1,5 +1,5 @@
 import psycopg2
-from app.exc.exc import AnimeNotFound
+from app.exc.exc import AnimeNotFound, InvalidKeyError
 from app.services.config import configs
 from psycopg2 import sql
 
@@ -119,3 +119,65 @@ class Animes():
 
         for_dict = {"data": dict(zip(keys, fetch_result))}
         return for_dict
+
+    @staticmethod
+    def anime_update(anime_id: int, data: dict):
+        keys = ["id", "anime", "released_date", "seasons"]
+        columns = [sql.Identifier(key) for key in data.keys()]
+        values = [sql.Literal(value) for value in data.values()]
+        invalid_key = [key for key in data.keys() if key not in keys]
+
+        if invalid_key:
+            raise InvalidKeyError(invalid_key)
+
+        conn = psycopg2.connect(**configs)
+        cur = conn.cursor()
+
+        query = sql.SQL(
+            """
+                UPDATE
+                    animes
+                SET
+                    ({columns}) = row({values})
+                WHERE
+                    id=({anime_id})
+                RETURNING *;
+            """
+        ).format(
+            anime_id=sql.Literal(str(anime_id)),
+            columns=sql.SQL(",").join(columns),
+            values=sql.SQL(",").join(values)
+        )
+
+        cur.execute(query)
+        fetch_result = cur.fetchone()
+
+        if not fetch_result:
+            raise AnimeNotFound
+
+        close_connection(conn, cur)
+
+        for_dict = dict(zip(keys, fetch_result))
+
+        return for_dict
+
+    @staticmethod
+    def anime_delete(anime_id: int):
+        conn = psycopg2.connect(**configs)
+        cur = conn.cursor()
+
+        cur.execute(
+            """
+                DELETE
+                FROM
+                    animes
+                WHERE
+                    id=(%s)
+                RETURNING *;
+            """, (anime_id, )
+        )
+        fetch_result = cur.fetchone()
+        close_connection(conn, cur)
+
+        if not fetch_result:
+            raise AnimeNotFound

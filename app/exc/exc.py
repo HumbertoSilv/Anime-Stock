@@ -1,2 +1,6 @@
 class AnimeNotFound(Exception):
     ...
+
+
+class InvalidKeyError(Exception):
+    ...

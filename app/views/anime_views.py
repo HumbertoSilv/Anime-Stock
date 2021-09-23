@@ -1,7 +1,8 @@
 from flask import Blueprint, request
+from flask.json import jsonify
 from app.services.anime_services import Animes
 from psycopg2.errors import UniqueViolation
-from app.exc.exc import AnimeNotFound
+from app.exc.exc import AnimeNotFound, InvalidKeyError
 
 
 bp_animes = Blueprint("anime_bp", __name__, url_prefix="/animes")
@@ -38,10 +39,26 @@ def filter(anime_id: int):
 
 
 @bp_animes.patch("/<int:anime_id>")
-def update():
-    ...
+def update(anime_id: int):
+    try:
+        data = request.json
+        anime = Animes.anime_update(anime_id, data)
+        return anime, 200
+
+    except InvalidKeyError as e:
+        return {"available_key": ["anime", "released_date", "seasons"],
+                "wrong_keys_sended": str(e)
+                }, 422
+
+    except AnimeNotFound:
+        return {"error": "Not found."}, 404
 
 
 @bp_animes.delete("<int:anime_id>")
-def delete():
-    ...
+def delete(anime_id: int):
+    try:
+        Animes.anime_delete(anime_id)
+        return {}, 204
+
+    except AnimeNotFound:
+        return {"error": "Not found."}, 404
