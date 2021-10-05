@@ -11,7 +11,6 @@ def close_connection(conn, cur):
 
 
 def create_table():
-
     conn = psycopg2.connect(**configs)
     cur = conn.cursor()
 
@@ -37,7 +36,6 @@ class Animes():
 
     def save(self):
         create_table()
-
         conn = psycopg2.connect(**configs)
         cur = conn.cursor()
 
@@ -59,19 +57,16 @@ class Animes():
         )
 
         cur.execute(query)
-
         fetch_result = cur.fetchone()
-
         close_connection(conn, cur)
 
         for_dict = dict(zip(keys, fetch_result))
-
         return for_dict
 
     @staticmethod
     def get_all():
-        keys = ["id", "anime", "released_date", "seasons"]
         create_table()
+        keys = ["id", "anime", "released_date", "seasons"]
 
         conn = psycopg2.connect(**configs)
         cur = conn.cursor()
@@ -159,7 +154,6 @@ class Animes():
             raise AnimeNotFound
 
         close_connection(conn, cur)
-
         for_dict = dict(zip(keys, fetch_result))
 
         return for_dict
