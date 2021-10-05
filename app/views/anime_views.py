@@ -1,9 +1,7 @@
-from flask import Blueprint, request
-from flask.json import jsonify
-from app.services.anime_services import Animes
-from psycopg2.errors import UniqueViolation
 from app.exc.exc import AnimeNotFound, InvalidKeyError
-
+from app.services.anime_services import Animes
+from flask import Blueprint, request
+from psycopg2.errors import UniqueViolation
 
 bp_animes = Blueprint("anime_bp", __name__, url_prefix="/animes")
 
